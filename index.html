@@ -846,14 +846,24 @@ const FONT_STYLES = `
 `;
 
 // ========== FORMATTERS ==========
-const formatBRL = (v, compact = false) => {
+// Abreviado (mi/k) — usado só nos eixos/rótulos de gráfico, onde o espaço é curto
+const formatBRLCompact = v => {
   if (!isFinite(v)) return 'R$ —';
-  if (compact && Math.abs(v) >= 1000000) {
+  if (Math.abs(v) >= 1000000) {
     return `R$ ${(v / 1000000).toFixed(2).replace('.', ',')}mi`;
   }
-  if (compact && Math.abs(v) >= 1000) {
+  if (Math.abs(v) >= 1000) {
     return `R$ ${(v / 1000).toFixed(1).replace('.', ',')}k`;
   }
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    maximumFractionDigits: 0
+  }).format(v);
+};
+// Valor cheio (ex.: R$ 1.339.654) — o segundo parâmetro é mantido só por compatibilidade
+const formatBRL = (v, _compact = false) => {
+  if (!isFinite(v)) return 'R$ —';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -1355,7 +1365,7 @@ function ComparisonChart({
       fontSize: 11,
       fontFamily: 'Manrope'
     },
-    tickFormatter: v => formatBRL(v, true)
+    tickFormatter: v => formatBRLCompact(v)
   }), /*#__PURE__*/React.createElement(Tooltip, {
     contentStyle: {
       background: BRAND.white,
@@ -1372,7 +1382,7 @@ function ComparisonChart({
     stroke: BRAND.warning,
     strokeDasharray: "4 4",
     label: {
-      value: `Patrimônio-alvo: ${formatBRL(target, true)}`,
+      value: `Patrimônio-alvo: ${formatBRLCompact(target)}`,
       fill: BRAND.warning,
       fontSize: 11,
       fontFamily: 'Manrope',
